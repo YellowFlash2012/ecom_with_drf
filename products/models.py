@@ -21,3 +21,6 @@ class Product(models.Model):
     stock=models.IntegerField(default=0)
     user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at=models.DateField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
