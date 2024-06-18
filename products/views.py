@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
-from .models import Product
+from .models import Product, ProductImages
 from rest_framework.response import Response
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, ProductImagesSerializer
 from .filters import ProductsFilter
 from rest_framework.pagination import PageNumberPagination
 
@@ -35,3 +35,18 @@ def get_one_product(request, pk):
     serializer = ProductSerializer(product, many=False)
     
     return Response({"success":True, "message":"Here is the product...", "product":serializer.data})
+
+@api_view(['POST'])
+def upload_product_images(request):
+    data = request.data
+    files = request.FILES.getlist("images")
+    
+    images = []
+    for f in files:
+        image = ProductImages.objects.create(product = Product(data['product']), image=f)
+        
+        images.append(image)
+        
+    serializer = ProductImagesSerializer(images, many=True)
+    
+    return Response({"success":True, "message":"Image uploaded successfully", 'images':serializer.data})
