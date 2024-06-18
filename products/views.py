@@ -68,3 +68,29 @@ def upload_product_images(request):
     serializer = ProductImagesSerializer(images, many=True)
     
     return Response({"success":True, "message":"Image uploaded successfully", 'images':serializer.data})
+
+@api_view(['PUT'])
+def update_product(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    
+    product.name=request.data["name"]
+    product.description=request.data["description"]
+    product.brand=request.data["brand"]
+    product.price=request.data["price"]
+    product.category=request.data["category"]
+    product.ratings=request.data["ratings"]
+    product.stock=request.data["stock"]
+    
+    product.save()
+    
+    serializer = ProductSerializer(product, many=False)
+    
+    return Response({"success":True, "message": f"Product {product.id} was successfully updated...", "product":serializer.data})
+
+@api_view(['DELETE'])
+def delete_product(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    
+    product.delete()
+    
+    return Response({"success":True, "message": f"Product {product.id} was successfully deleted..."})
