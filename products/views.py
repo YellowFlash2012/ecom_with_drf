@@ -15,7 +15,7 @@ def get_products(request):
     # products = Product.objects.all()
     
     # pagination config
-    resPerPage=1
+    resPerPage=9
     paginator = PageNumberPagination()
     paginator.page_size = resPerPage
     
@@ -35,6 +35,17 @@ def get_one_product(request, pk):
     serializer = ProductSerializer(product, many=False)
     
     return Response({"success":True, "message":"Here is the product...", "product":serializer.data})
+
+
+@api_view(['POST'])
+def add_new_product(request):
+    data  = request.data
+    product = Product.objects.create(**data)
+    
+    serializer = ProductSerializer(product, many=False)
+    
+    return Response({"success":True, "message":"New product successfully added...", "product":serializer.data})
+    
 
 @api_view(['POST'])
 def upload_product_images(request):
