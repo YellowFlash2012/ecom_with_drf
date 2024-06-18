@@ -40,11 +40,18 @@ def get_one_product(request, pk):
 @api_view(['POST'])
 def add_new_product(request):
     data  = request.data
-    product = Product.objects.create(**data)
     
-    serializer = ProductSerializer(product, many=False)
+    serializer = ProductSerializer(data=data)
     
-    return Response({"success":True, "message":"New product successfully added...", "product":serializer.data})
+    if serializer.is_valid():
+        product = Product.objects.create(**data)
+    
+        res = ProductSerializer(product, many=False)
+    
+        return Response({"success":True, "message":"New product successfully added...", "product":res.data})
+    else:
+        return Response(serializer.errors)
+    
     
 
 @api_view(['POST'])
