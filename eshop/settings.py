@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from datetime import timedelta
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,7 +37,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'storages',
+    'rest_framework_simplejwt',
     'products.apps.ProductsConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -83,9 +87,20 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    "EXCEPTION_HANDLER":"eshop.utils.custom_exception_handler.custom_exception_handler"
+    "EXCEPTION_HANDLER":"eshop.utils.custom_exception_handler.custom_exception_handler",
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=9),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
