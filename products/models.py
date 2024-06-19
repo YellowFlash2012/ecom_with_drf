@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 class Category(models.TextChoices):
     ELECTRONICS = "Electronics",
     LAPTOPS = "Laptops",
@@ -31,3 +32,8 @@ class ProductImages(models.Model):
     
     # upload to products folder in S3
     image = models.ImageField(upload_to="products")
+    
+@receiver(post_delete, sender = ProductImages)
+def auto_delete_images_on_delete(sender, instance, **kwargs):
+    if instance.image:
+        instance.image.delete(save=False)

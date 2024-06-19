@@ -91,6 +91,11 @@ def update_product(request, pk):
 def delete_product(request, pk):
     product = get_object_or_404(Product, id=pk)
     
+    args = {"product":pk}
+    images = ProductImages.objects.filter(args)
+    for i in images:
+        i.delete()
+    
     product.delete()
     
     return Response({"success":True, "message": f"Product {product.id} was successfully deleted..."})
