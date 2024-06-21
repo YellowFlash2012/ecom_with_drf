@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .models import Product, ProductImages
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .serializers import ProductSerializer, ProductImagesSerializer
 from .filters import ProductsFilter
 from rest_framework.pagination import PageNumberPagination
@@ -26,7 +28,7 @@ def get_products(request):
     
     # print(len(serializer.data))
     
-    return Response({"success":True, "message":"Here are all the products...", "count":len(serializer.data), "products":serializer.data})
+    return Response({"success":True, "message":"Here are all the products...", "count":len(serializer.data), "products":serializer.data}, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 def get_one_product(request, pk):
@@ -34,21 +36,22 @@ def get_one_product(request, pk):
     
     serializer = ProductSerializer(product, many=False)
     
-    return Response({"success":True, "message":"Here is the product...", "product":serializer.data})
+    return Response({"success":True, "message":"Here is the product...", "product":serializer.data}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_new_product(request):
     data  = request.data
     
     serializer = ProductSerializer(data=data)
     
     if serializer.is_valid():
-        product = Product.objects.create(**data)
+        product = Product.objects.create(**data, user=request.user)
     
         res = ProductSerializer(product, many=False)
     
-        return Response({"success":True, "message":"New product successfully added...", "product":res.data})
+        return Response({"success":True, "message":"New product successfully added...", "product":res.data}, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors)
     
@@ -70,8 +73,12 @@ def upload_product_images(request):
     return Response({"success":True, "message":"Image uploaded successfully", 'images':serializer.data})
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_product(request, pk):
     product = get_object_or_404(Product, id=pk)
+    
+    if product.user != request.user:
+        return Response({"success":False, "error":"You can NOT update this product"}, status=status.HTTP_403_FORBIDDEN)
     
     product.name=request.data["name"]
     product.description=request.data["description"]
@@ -85,11 +92,15 @@ def update_product(request, pk):
     
     serializer = ProductSerializer(product, many=False)
     
-    return Response({"success":True, "message": f"Product {product.id} was successfully updated...", "product":serializer.data})
+    return Response({"success":True, "message": f"Product {product.id} was successfully updated...", "product":serializer.data}, status=status.HTTP_201_CREATED)
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_product(request, pk):
     product = get_object_or_404(Product, id=pk)
+    
+    if product.user != request.user:
+        return Response({"success":False, "error":"You can NOT delete this product"}, status=status.HTTP_403_FORBIDDEN)
     
     args = {"product":pk}
     images = ProductImages.objects.filter(args)
@@ -98,4 +109,4 @@ def delete_product(request, pk):
     
     product.delete()
     
-    return Response({"success":True, "message": f"Product {product.id} was successfully deleted..."})
+    return Response({"success":True, "message": f"Product {product.id} was successfully deleted..."}, status=status.HTTP_200_OK)
