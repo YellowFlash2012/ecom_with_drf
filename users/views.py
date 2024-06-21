@@ -35,8 +35,28 @@ def register_user(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def current_user(request):
-    user = UserSerializer(request.user)
+    user = UserSerializer(request.user, many=False)
     
     # print(user.data)
     
     return Response({"success":True, "message":f'Here are the details of {user.data["first_name"]}', "user":user.data}, status=status.HTTP_200_OK)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_user_details(request):
+    user = request.user
+    data = request.data
+    
+    user.first_name = data['first_name']
+    user.last_name = data['last_name']
+    user.username = data['email']
+    user.email = data['email']
+    
+    if data["password"] != "":
+        user.password = make_password(data["password"])
+        
+    user.save()
+    
+    serializer = UserSerializer(user, many=False)
+    
+    return Response({"success":True, "message": "Your details were successfully updated!", "data":serializer.data}, status=status.HTTP_201_CREATED)
