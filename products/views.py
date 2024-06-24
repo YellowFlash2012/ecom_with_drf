@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework.decorators import api_view, permission_classes
-from .models import Product, ProductImages
+from .models import Product, ProductImages, Review
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -110,3 +111,45 @@ def delete_product(request, pk):
     product.delete()
     
     return Response({"success":True, "message": f"Product {product.id} was successfully deleted..."}, status=status.HTTP_200_OK)
+
+# *** review views
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def new_review(request, pk):
+    user = request.user
+    product = get_object_or_404(Product, id=pk)
+    data = request.data
+    
+    review = product.reviews
+    
+    if data["rating"] <= 0 or data["rating"] > 5:
+        return Response({"success":False, "error":"Only ratings between 1-5 are allowed"}, status=status.HTTP_400_BAD_REQUEST) 
+    
+    elif review.exists():
+        new_review = {"rating":data["rating"], "comment":data["comment"]}
+        review.update(**new_review)
+        
+        rating = product.reviews.aggregate(avg_ratings=Avg("rating"))
+        
+        product.ratings = rating["avg_ratings"]
+        
+        product.save()
+        
+        return Response({"success":True, "message":"Your review was successfully updated!"}, status=status.HTTP_201_CREATED)
+    
+    else:
+        Review.objects.create(
+            user=user,
+            product=product,
+            rating=data["rating"],
+            comment=data["comment"]
+        )
+        
+        rating = product.reviews.aggregate(avg_ratings=Avg("rating"))
+        
+        product.ratings = rating["avg_ratings"]
+        
+        product.save()
+        
+        return Response({"success":True, "message":"Your review was successfully posted!"}, status=status.HTTP_201_CREATED)
