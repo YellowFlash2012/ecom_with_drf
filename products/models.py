@@ -37,3 +37,13 @@ class ProductImages(models.Model):
 def auto_delete_images_on_delete(sender, instance, **kwargs):
     if instance.image:
         instance.image.delete(save=False)
+        
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
+    user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    rating = models.IntegerField(default=0)
+    comment = models.TextField(default="", blank=False)
+    created_at=models.DateField(auto_now_add=True)
+    
+    def __str__(self):
+        return str(self.comment)
