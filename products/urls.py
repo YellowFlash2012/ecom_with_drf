@@ -15,4 +15,6 @@ urlpatterns = [
     path("upload_images", views.upload_product_images, name="upload_images"),
     
     path("<str:pk>/reviews", views.new_review, name="new_update_review"),
+    
+    path("<str:pk>/reviews/delete", views.delete_review, name="delete_review"),
 ]

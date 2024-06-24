@@ -153,3 +153,26 @@ def new_review(request, pk):
         product.save()
         
         return Response({"success":True, "message":"Your review was successfully posted!"}, status=status.HTTP_201_CREATED)
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_review(request, pk):
+    user = request.user
+    product = get_object_or_404(Product, id=pk)
+    review = product.reviews.filter(user=user)
+    
+    if review.exists():
+        review.delete()
+        
+        rating = product.reviews.aggregate(avg_ratings=Avg("rating"))
+        
+        if rating["avg_ratings"] is None:
+            rating["avg_ratings"] = 0
+        
+        product.ratings = rating["avg_ratings"]
+        
+        product.save()
+        
+        return Response({"success":True, "message":"The review was successfully deleted!"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"success":False, "error":"Review NOT found!"}, status=status.HTTP_404_NOT_FOUND) 
