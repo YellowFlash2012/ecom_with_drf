@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -11,6 +12,25 @@ from .serializers import *
 from products.models import Product
 
 # Create your views here.
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_orders(request):
+    orders = Order.objects.all()
+    
+    serializer = OrderSerializer(orders, many=True)
+    
+    return Response({"success":True, "count":len(serializer.data), "message":"Here are all the orders you placed on our site", "data":serializer.data}, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_single_order(request, pk):
+    order = get_object_or_404(Order, id=pk)
+    
+    serializer = OrderSerializer(order, many=False)
+    
+    return Response({"success":True, "message":"Here is the order you requested", "data":serializer.data}, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def new_order(request):
