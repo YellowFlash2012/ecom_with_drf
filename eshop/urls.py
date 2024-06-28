@@ -13,6 +13,8 @@ urlpatterns = [
     
     path("api/v1/products/", include("products.urls")),
     
+    path("api/v1/orders/", include("orders.urls")),
+    
     path("api/v1/users/", include("users.urls")),
     
     # simpleJWT config

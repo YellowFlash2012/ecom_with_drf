@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django_filters',
     'storages',
     'rest_framework_simplejwt',
+    
+    # apps
     'products.apps.ProductsConfig',
     'users.apps.UsersConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
