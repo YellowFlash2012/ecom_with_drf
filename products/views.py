@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from .models import Product, ProductImages, Review
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import ProductSerializer, ProductImagesSerializer
 from .filters import ProductsFilter
 from rest_framework.pagination import PageNumberPagination
@@ -41,7 +41,7 @@ def get_one_product(request, pk):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def add_new_product(request):
     data  = request.data
     
@@ -59,6 +59,7 @@ def add_new_product(request):
     
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def upload_product_images(request):
     data = request.data
     files = request.FILES.getlist("images")
@@ -74,7 +75,7 @@ def upload_product_images(request):
     return Response({"success":True, "message":"Image uploaded successfully", 'images':serializer.data})
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def update_product(request, pk):
     product = get_object_or_404(Product, id=pk)
     
@@ -96,7 +97,7 @@ def update_product(request, pk):
     return Response({"success":True, "message": f"Product {product.id} was successfully updated...", "product":serializer.data}, status=status.HTTP_201_CREATED)
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def delete_product(request, pk):
     product = get_object_or_404(Product, id=pk)
     

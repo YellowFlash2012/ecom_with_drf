@@ -8,5 +8,9 @@ urlpatterns = [
     
     path("<str:pk>", views.get_single_order, name="get_single_order"),
     
+    path("<str:pk>/process", views.process_single_order, name="process_single_order"),
+    
+    path("<str:pk>/delete", views.delete_single_order, name="delete_single_order"),
+    
 
 ]

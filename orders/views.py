@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -89,3 +89,25 @@ def new_order(request):
         serializer = OrderSerializer(order, many=False)
         
         return Response({"success":True, "message":"Order placed successfully", "data":serializer.data}, status=status.HTTP_201_CREATED)
+
+# process order
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def process_single_order(request, pk):
+    order = get_object_or_404(Order, id=pk)
+    
+    order.order_status = request.data["order_status"]
+    
+    serializer = OrderSerializer(order, many=False)
+    
+    return Response({"success":True, "message":f"Order {order.id} has been successfully processed", "data":serializer.data}, status=status.HTTP_201_CREATED)
+
+# process order
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def delete_single_order(request, pk):
+    order = get_object_or_404(Order, id=pk)
+    
+    order.delete()
+    
+    return Response({"success":True, "message":f"Order {order.id} has been successfully deleted"}, status=status.HTTP_200_OK)
