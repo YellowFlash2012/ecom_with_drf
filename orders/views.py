@@ -9,17 +9,31 @@ from rest_framework.pagination import PageNumberPagination
 
 from .models import *
 from .serializers import *
+from .filters import *
 from products.models import Product
+
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_orders(request):
-    orders = Order.objects.all()
     
-    serializer = OrderSerializer(orders, many=True)
+    # filter config
+    filterset = OrdersFilter(request.GET, queryset=Order.objects.all().order_by('id'))
     
-    return Response({"success":True, "count":len(serializer.data), "message":"Here are all the orders you placed on our site", "data":serializer.data}, status=status.HTTP_200_OK)
+    count = filterset.qs.count()
+    
+    # pagination config
+    resPerPage = 9
+    paginator = PageNumberPagination()
+    paginator.page_size = resPerPage
+    
+    queryset = paginator.paginate_queryset(filterset.qs, request)
+    
+    serializer = OrderSerializer(queryset, many=True)
+    
+    return Response({"success":True, "count":len(serializer.data), "page":resPerPage, "message":"Here are all the orders you placed on our site", "data":serializer.data}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
