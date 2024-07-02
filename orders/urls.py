@@ -12,5 +12,7 @@ urlpatterns = [
     
     path("<str:pk>/delete", views.delete_single_order, name="delete_single_order"),
     
+    path("create-checkout-session", views.create_checkout_session, name="create_checkout_session"),
+    
 
 ]
