@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -185,7 +186,41 @@ def stripe_webhook(request):
     
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        print(session)
+        
+        line_items = stripe.checkout.Session.list_line_items(session['id'])
+        
+        price = session['amount_total'] / 100
+        
+        order = Order.objects.create(
+            user = User(session.metadata.user),
+            street = User(session.metadata.street),
+            city = User(session.metadata.city),
+            state = User(session.metadata.state),
+            zip_code = User(session.metadata.zip_code),
+            phone_number = User(session.metadata.phone_number),
+            country = User(session.metadata.country),
+            total_amount = price,
+            payment_mode = "Card",
+            payment_status = "PAID"
+        )
+        
+        for item in line_items['data']:
+            line_product = stripe.Product.retrieve(item.price.product)
+            product_id = line_product.metadata.product_id
+            
+            product = Product.objects.get(id=product_id)
+            
+            item = OrderItem.objects.create(
+                product = product,
+                order = order,
+                name = product.name,
+                quantity = item.quantity,
+                price = item.price.unit_amount / 100,
+                image = line_product.images[0]
+            )
+            
+            product.stock -= item.quantity
+            product.save()
         
         return Response({"success":True, "message":'Your Payment was successful'})
     
