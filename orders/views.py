@@ -14,6 +14,10 @@ from products.models import Product
 
 from rest_framework.pagination import PageNumberPagination
 
+import stripe
+import os
+from eshop.utils.helpers import *
+
 # Create your views here.
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -111,3 +115,6 @@ def delete_single_order(request, pk):
     order.delete()
     
     return Response({"success":True, "message":f"Order {order.id} has been successfully deleted"}, status=status.HTTP_200_OK)
+
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+YOUR_DOMAIN = get_current_host()

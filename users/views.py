@@ -13,6 +13,8 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from datetime import timedelta, datetime
 
+from eshop.utils.helpers import *
+
 # Create your views here.
 @api_view(["POST"])
 def register_user(request):
@@ -66,11 +68,11 @@ def update_user_details(request):
     return Response({"success":True, "message": "Your details were successfully updated!", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
 # password reset views
-def get_current_host(request):
-    protocol = request.is_secure() and "https" or "http"
-    host = request.get_host()
+# def get_current_host(request):
+#     protocol = request.is_secure() and "https" or "http"
+#     host = request.get_host()
     
-    return "{protocol}://{host}/".format(protocol=protocol, host=host)
+#     return "{protocol}://{host}/".format(protocol=protocol, host=host)
 
 @api_view(["POST"])
 def forgot_password(request):
