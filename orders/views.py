@@ -27,7 +27,7 @@ from eshop.utils.helpers import *
 def get_user_orders(request):
     
     # filter config
-    filterset = OrdersFilter(request.GET, queryset=Order.objects.all().order_by('id'))
+    filterset = OrdersFilter(request.GET, queryset=Order.objects.all().filter(user=request.user).order_by('id'))
     
     count = filterset.qs.count()
     
@@ -46,6 +46,9 @@ def get_user_orders(request):
 @permission_classes([IsAuthenticated])
 def get_single_order(request, pk):
     order = get_object_or_404(Order, id=pk)
+    
+    if order.user != request.user:
+        return Response({"success":False, "error":"You can NOT get this order"}, status=status.HTTP_403_FORBIDDEN)
     
     serializer = OrderSerializer(order, many=False)
     

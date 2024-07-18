@@ -162,6 +162,9 @@ def delete_review(request, pk):
     product = get_object_or_404(Product, id=pk)
     review = product.reviews.filter(user=user)
     
+    if review.user != request.user:
+        return Response({"success":False, "error":"You can NOT delete this review"}, status=status.HTTP_403_FORBIDDEN)
+    
     if review.exists():
         review.delete()
         
